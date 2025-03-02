@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <style>
+        body{
+            /* background-image: radial-gradient(73% 147%, #EADFDF 59%, #ECE2DF 100%), radial-gradient(91% 146%, rgba(255,255,255,0.50) 47%, rgba(0,0,0,0.50) 100%); */
+            /* background-blend-mode: screen; */
+            /* background-image: url("login_img2.jpg"); */
+            background-image: url("file storage background (3).png");
+            background-size: cover;
+            background-repeat: no-repeat;
+        }
+        .login-container h2{
+            font-size: 2.3em;
+        }
+        .login-container {
+            max-width: 400px;
+            margin: auto;
+            padding: 20px;
+            background: #ffffff;
+            border-radius: 8px;
+            box-shadow: 5px 5px 40px rgba(0,0,0,0.8);
+        }
+
+        .login-container input, .login-container button {
+            width: 95%;
+            padding: 10px;
+            margin: 10px 0;
+            margin-right: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .login-container button {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+        }
+
+        .login-container button:hover {
+            background-color: #0056b3;
+        }
+
+        .nav-buttons {
+            margin-top: 20px;
+            display: none;
+        }
+
+        .nav-buttons button {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            background-color: #28a745;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .nav-buttons button:hover {
+            background-color: #218838;
+        }
+
+        #welcomeMessage {
+            border-radius: 8px;
+            background-image: linear-gradient( 110.1deg,  rgba(53, 148, 53, 0.611) 2.9%, rgba(168,251,60,1) 90.3% );
+            color: black;
+            font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+            display: none;
+            text-align: center;
+            margin-top: 20px;
+            font-size: 20px;
+            font-weight: bold;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+        }
+    </style>
+</head>
+<body>
+<div class="login-container">
+    <h2>Login</h2>
+    <input type="email" id="email" placeholder="Email" required>
+    <input type="password" id="uniquepassword" placeholder="Password" required>
+    <button onclick="login()">Login</button>
+
+    <!-- Logout button -->
+    <button id="logoutBtn" style="display:none;" onclick="logout()">Logout</button>
+
+    <!-- Welcome message -->
+    <div id="welcomeMessage">
+        Welcome back! you can continue from where you left off
+    </div>
+
+    <!-- Navigation buttons -->
+    <div class="nav-buttons">
+        <button onclick="redirectTo('files.html')">Go to Files</button>
+        <button onclick="redirectTo('appointment.html')">Go to Appointments</button>
+        <button onclick="redirectTo('scheduledappointments.html')">Go to Scheduled appointment Reminders</button>
+        <a href="analysis.html"><button>Go to Analysis</button></a>
+        <button onclick="redirectTo('ai_index.html')">Medical Chatbot</button>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/pocketbase@latest/dist/pocketbase.min.js"></script>
+<script>
+    const pocketbaseUrl = 'http://127.0.0.1:8090';
+    const usersCollection = `${pocketbaseUrl}/api/collections/users/records`;
+
+    async function login() {
+        const email = document.getElementById('email').value;
+        const uniquepassword = document.getElementById('uniquepassword').value;
+
+        try {
+            // Fetch all user records
+            const response = await fetch(usersCollection);
+            const data = await response.json();
+            const users = data.items;
+
+            // Check if user exists and password matches
+            const user = users.find(user => user.email === email && user.uniquepassword === uniquepassword);
+
+            if (user) {
+                // Store user email in local storage
+                localStorage.setItem('userEmail', email);
+                
+                // Show navigation buttons, logout button, and welcome message
+                document.querySelector('.nav-buttons').style.display = 'block';
+                document.getElementById('logoutBtn').style.display = 'block';
+                document.getElementById('welcomeMessage').style.display = 'block';  // Show welcome message
+            } else {
+                throw new Error('Invalid credentials');
+            }
+        } catch (error) {
+            console.error('Login error:', error);
+            alert('Login failed: ' + error.message);
+        }
+    }
+
+    function redirectTo(page) {
+        const email = localStorage.getItem('userEmail');
+        if (email) {
+            window.location.href = `${page}?email=${encodeURIComponent(email)}`;
+        } else {
+            alert('User not logged in.');
+        }
+    }
+
+    // Logout function
+    async function logout() {
+        const email = localStorage.getItem('userEmail');
+
+        if (email) {
+            try {
+                // Fetch all user records
+                const response = await fetch(usersCollection);
+                const data = await response.json();
+                const users = data.items;
+
+                // Find the user record with the matching email
+                const user = users.find(user => user.email === email);
+
+                if (user) {
+                    // Delete the user record using its ID
+                    const deleteResponse = await fetch(`${usersCollection}/${user.id}`, {
+                        method: 'DELETE',
+                    });
+
+                    if (!deleteResponse.ok) {
+                        throw new Error('Failed to delete user');
+                    }
+
+                    // Clear the user email from local storage
+                    localStorage.removeItem('userEmail');
+
+                    // Redirect to the home page
+                    window.location.href = 'index.html';
+                } else {
+                    alert('User not found.');
+                }
+            } catch (error) {
+                console.error('Error during logout:', error);
+                alert('Logout failed: ' + error.message);
+            }
+        } else {
+            alert('User not logged in.');
+        }
+    }
+
+    // Ensure the logout button is visible only when logged in
+    document.addEventListener('DOMContentLoaded', () => {
+        const email = localStorage.getItem('userEmail');
+        if (email) {
+            document.getElementById('logoutBtn').style.display = 'block';
+        }
+    });
+</script>
+</body>
+</html>
+

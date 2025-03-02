@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scheduled Appointments</title>
+    <link href="https://fonts.googleapis.com/css2?family=Acme&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            /* background-image: white; */
+            background-image: url("file storage background (3).png");
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+
+        .header {
+            height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-image: linear-gradient(to top, #1e3c72 0%, #2a5298 100%);
+            color: #fff;
+            border-bottom: 1px solid #0056b3;
+            position: relative;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+        }
+
+        .header img {
+            height: 120px;
+            width: 120px;
+            border-radius: 25px;
+            position: absolute;
+            left: 20px;
+            /* box-shadow: 0 0 10px rgba(0, 0, 0, 0.8); */
+        }
+
+        .header h1 {
+            font-family: "Acme", sans-serif;
+            font-weight: 400;
+            font-style: normal;
+            font-size: 4em;
+            margin: 0;
+            /* font-size: 2.5rem; */
+            color: white;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 20px auto;
+            background-image: linear-gradient(-225deg, #77FFD2 0%, #6297DB 48%, #1eecff6b 100%);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.2);
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 2rem;
+            color: #333;
+        }
+
+        .appointment-item, .reminder {
+            margin-bottom: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            background-color: #fff;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .appointment-item {
+            border-left: 5px solid #007bff;
+            border-radius: 8px;
+        }
+
+        .reminder {
+            border: 1px solid #f8d7da;
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .delete-btn {
+            background-color: #dc3545;
+            color: #fff;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .delete-btn:hover {
+            background-color: #c82333;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <img src="logo3.png" alt="Logo"> <!-- Placeholder for logo -->
+        <h1>Scheduled Appointments</h1>
+    </div>
+    <div class="container">
+        <div id="appointmentList"></div>
+        <div id="reminderList"></div>
+    </div>
+
+    <script>
+        async function fetchAppointments() {
+            const userEmail = new URLSearchParams(window.location.search).get('email');
+
+            if (!userEmail) {
+                alert('No user email found. Please log in.');
+                return;
+            }
+
+            try {
+                // Fetch user ID
+                const userResponse = await fetch(`http://127.0.0.1:8090/api/collections/users/records?filter=email="${encodeURIComponent(userEmail)}"`);
+                if (!userResponse.ok) {
+                    throw new Error('Failed to fetch user record');
+                }
+
+                const userData = await userResponse.json();
+                if (userData.items.length === 0) {
+                    throw new Error('No user found with this email');
+                }
+
+                const userId = userData.items[0].id;
+
+                // Fetch appointments
+                const appointmentsResponse = await fetch(`http://127.0.0.1:8090/api/collections/appointment/records?filter=user="${userId}"`);
+                if (!appointmentsResponse.ok) {
+                    throw new Error('Failed to fetch appointments');
+                }
+
+                const appointments = await appointmentsResponse.json();
+
+                // Display appointments
+                const appointmentList = document.getElementById('appointmentList');
+                appointments.items.forEach(app => {
+                    const appointmentItem = document.createElement('div');
+                    appointmentItem.className = 'appointment-item';
+                    appointmentItem.innerHTML = `
+                        <strong>Date and Time:</strong> ${new Date(app.datetime).toLocaleString()}<br>
+                        <strong>Doctor:</strong> ${app.appointment_doctor}<br>
+                        <strong>Location:</strong> ${app.location}<br>
+                        <strong>Reason:</strong> ${app.reason}<br>
+                        <button class="delete-btn" onclick="deleteAppointment('${app.id}')">Delete Appointment</button>
+                    `;
+                    appointmentList.appendChild(appointmentItem);
+                });
+
+                // Generate and display reminders
+                generateReminders(appointments.items);
+                
+            } catch (error) {
+                console.error('Error fetching appointments:', error);
+                alert('An error occurred while fetching appointments.');
+            }
+        }
+
+        function generateReminders(appointments) {
+            const reminderList = document.getElementById('reminderList');
+            
+            appointments.forEach(app => {
+                const appointmentDate = new Date(app.datetime);
+                const reminderItem = document.createElement('div');
+                reminderItem.className = 'reminder';
+                reminderItem.innerHTML = `
+                    <strong>Reminder:</strong> You have an appointment with ${app.appointment_doctor} on ${appointmentDate.toLocaleString()} at ${app.location}. Reason: ${app.reason}.<br>
+                    <button class="delete-btn" onclick="deleteAppointment('${app.id}')">Delete Appointment</button>
+                `;
+                reminderList.appendChild(reminderItem);
+            });
+        }
+
+        async function deleteAppointment(appointmentId) {
+            try {
+                const deleteResponse = await fetch(`http://127.0.0.1:8090/api/collections/appointment/records/${appointmentId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (deleteResponse.ok) {
+                    alert('Appointment deleted successfully!');
+                    document.getElementById('appointmentList').innerHTML = '';
+                    document.getElementById('reminderList').innerHTML = '';
+                    fetchAppointments(); // Refresh the list after deletion
+                } else {
+                    const errorBody = await deleteResponse.text();
+                    alert('Error deleting appointment: ' + errorBody);
+                }
+            } catch (error) {
+                console.error('Error deleting appointment:', error);
+                alert('An error occurred while deleting the appointment.');
+            }
+        }
+
+        fetchAppointments();
+    </script>
+</body>
+</html>

@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Set Appointment Reminders</title>
+    <link href="https://fonts.googleapis.com/css2?family=Acme&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-image: url("file storage background (3).png");
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-position: center;
+            /* background: linear-gradient(to bottom, #e0eafc, #cfdef3); */
+        }
+
+        .header {
+            height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px;
+            background-image: linear-gradient(to top, #1e3c72 0%, #2a5298 100%);
+            color: #fff;
+            border-bottom: 3px solid #004494;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+        }
+
+        .header img {
+            position: absolute;
+            left: 30px;
+            height: 120px;
+            width: 120px;
+            /* margin-right: 20px; */
+            /* border-radius: 25px; */
+            /* box-shadow: 0 0 10px rgba(0, 0, 0, 0.8); */
+        }
+
+        .header h1 {
+            margin: 0;
+            font-family: "Acme", sans-serif;
+            font-weight: 400;
+            font-style: normal;
+            font-size: 4em;
+            /* font-size: 3rem; */
+            font-weight: 700;
+        }
+
+        .container {
+            max-width: 700px;
+            margin: 30px auto;
+            background: #fff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 1.1rem;
+            color: #333;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+            font-size: 1rem;
+        }
+
+        .form-group button {
+            background: #007bff;
+            color: #fff;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            transition: background 0.3s ease;
+        }
+
+        .form-group button:hover {
+            background: #0056b3;
+        }
+
+        /* Calendar grid styling */
+        .calendar {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 8px;
+            margin-top: 20px;
+        }
+
+        .calendar-cell {
+            width: 60px;
+            height: 60px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            background: #fff;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .calendar-cell:hover {
+            background: #f0f8ff;
+        }
+
+        .calendar-cell.booked {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .calendar-header {
+            text-align: center;
+            grid-column: span 7;
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .calendar-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .calendar-controls button {
+            background: #007bff;
+            color: #fff;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background 0.3s ease;
+        }
+
+        .calendar-controls button:hover {
+            background: #0056b3;
+        }
+        #logo {
+    position: absolute;
+    left: 30px;
+    width: 120px;
+    height: 120px;
+    margin: 0;
+    /* border-radius: 25px; */
+    /* box-shadow: 0 0 10px rgba(0, 0, 0, 0.8); */
+}
+    </style>
+</head>
+<body>
+    <div class="header">
+        <img id="logo" src="logo3.png" alt="Logo">
+        <h1>Set Appointment Reminders</h1>
+    </div>
+    <div class="container">
+        <form id="appointmentForm">
+            <div class="form-group">
+                <label for="datetime">Date and Time:</label>
+                <input type="datetime-local" id="datetime" name="datetime" required>
+            </div>
+            <div class="form-group">
+                <label for="appointment_doctor">Doctor:</label>
+                <input type="text" id="appointment_doctor" name="appointment_doctor" required>
+            </div>
+            <div class="form-group">
+                <label for="location">Location:</label>
+                <input type="text" id="location" name="location" required>
+            </div>
+            <div class="form-group">
+                <label for="reason">Reason:</label>
+                <input type="text" id="reason" name="reason" required>
+            </div>
+            <div class="form-group">
+                <button type="submit">Set Reminder</button>
+            </div>
+        </form>
+
+        <h2>Appointments Calendar</h2>
+        <div class="calendar-controls">
+            <button id="prevMonth">Previous</button>
+            <div class="calendar-header" id="calendarHeader"></div>
+            <button id="nextMonth">Next</button>
+        </div>
+        <div class="calendar" id="calendarGrid"></div>
+    </div>
+
+    <script>
+        let currentYear = new Date().getFullYear();
+        let currentMonth = new Date().getMonth();
+    
+        // Ensure that the appointment can only be booked for future dates
+        document.getElementById('appointmentForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
+    
+            const datetime = document.getElementById('datetime').value;
+    
+            // Get today's date and set time to midnight
+            const today = new Date();
+            today.setHours(0, 0, 0, 0); // Set time to the start of the day
+    
+            const selectedDate = new Date(datetime);
+    
+            // Compare selected date with today's date
+            if (selectedDate < today) {
+                alert('You cannot book an appointment in the past. Please select a future date and time.');
+                return;
+            }
+    
+            const appointment_doctor = document.getElementById('appointment_doctor').value;
+            const location = document.getElementById('location').value;
+            const reason = document.getElementById('reason').value;
+            const userEmail = new URLSearchParams(window.location.search).get('email');
+    
+            if (!userEmail) {
+                alert('No user email found. Please log in.');
+                return;
+            }
+    
+            try {
+                const userResponse = await fetch(`http://127.0.0.1:8090/api/collections/users/records?filter=email="${encodeURIComponent(userEmail)}"`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+    
+                if (!userResponse.ok) {
+                    throw new Error('Failed to fetch user record');
+                }
+    
+                const userData = await userResponse.json();
+                if (userData.items.length === 0) {
+                    throw new Error('No user found with this email');
+                }
+    
+                const userId = userData.items[0].id;
+    
+                const isoDatetime = new Date(datetime).toISOString();
+    
+                const appointmentData = {
+                    user: userId,
+                    datetime: isoDatetime,
+                    appointment_doctor: appointment_doctor,
+                    location: location,
+                    reason: reason
+                };
+    
+                const createAppointmentResponse = await fetch('http://127.0.0.1:8090/api/collections/appointment/records', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(appointmentData)
+                });
+    
+                if (createAppointmentResponse.ok) {
+                    alert('Appointment scheduled successfully!');
+                    document.getElementById('appointmentForm').reset();
+                    generateCalendar(currentYear, currentMonth); // Refresh calendar after appointment creation
+                } else {
+                    const errorBody = await createAppointmentResponse.text();
+                    alert('Error scheduling appointment: ' + errorBody);
+                }
+            } catch (error) {
+                console.error('Error scheduling appointment:', error);
+                alert('An error occurred while scheduling the appointment.');
+            }
+        });
+    
+        // Generate calendar for a specific year and month
+        function generateCalendar(year, month) {
+            const calendarGrid = document.getElementById('calendarGrid');
+            const calendarHeader = document.getElementById('calendarHeader');
+            calendarGrid.innerHTML = '';
+            calendarHeader.innerText = `${month + 1}/${year}`;
+    
+            const firstDayOfMonth = new Date(year, month, 1).getDay();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+    
+            for (let i = 0; i < firstDayOfMonth; i++) {
+                const emptyCell = document.createElement('div');
+                emptyCell.classList.add('calendar-cell');
+                calendarGrid.appendChild(emptyCell);
+            }
+    
+            for (let day = 1; day <= daysInMonth; day++) {
+                const cell = document.createElement('div');
+                cell.classList.add('calendar-cell');
+                cell.textContent = day;
+                cell.setAttribute('data-date', `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`);
+                calendarGrid.appendChild(cell);
+            }
+    
+            markBookedDays();
+        }
+    
+        async function markBookedDays() {
+            const userEmail = new URLSearchParams(window.location.search).get('email');
+    
+            if (!userEmail) {
+                alert('No user email found. Please log in.');
+                return;
+            }
+    
+            try {
+                // Fetch the user ID using the email
+                const userResponse = await fetch(`http://127.0.0.1:8090/api/collections/users/records?filter=email="${encodeURIComponent(userEmail)}"`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+    
+                if (!userResponse.ok) {
+                    throw new Error('Failed to fetch user record');
+                }
+    
+                const userData = await userResponse.json();
+                if (userData.items.length === 0) {
+                    throw new Error('No user found with this email');
+                }
+    
+                const userId = userData.items[0].id;
+    
+                // Fetch appointments where the 'user' field (relation) matches the user ID
+                const response = await fetch(`http://127.0.0.1:8090/api/collections/appointment/records?filter=user="${userId}"`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+    
+                if (!response.ok) {
+                    throw new Error('Failed to fetch appointments');
+                }
+    
+                const appointments = await response.json();
+    
+                // Get all calendar cells
+                const calendarCells = document.querySelectorAll('.calendar-cell');
+                calendarCells.forEach(cell => {
+                    const cellDate = cell.getAttribute('data-date'); // Format: YYYY-MM-DD
+    
+                    // Check if the appointment date matches the cell date
+                    const bookedAppointment = appointments.items.find(app => {
+                        const appointmentDate = new Date(app.datetime).toISOString().split('T')[0];
+                        return appointmentDate === cellDate;
+                    });
+    
+                    if (bookedAppointment) {
+                        cell.classList.add('booked');
+                        cell.addEventListener('click', () => deleteAppointment(bookedAppointment.id, cell));
+                    }
+                });
+            } catch (error) {
+                console.error('Error fetching appointments:', error);
+                alert('An error occurred while fetching appointments.');
+            }
+        }
+    
+        async function deleteAppointment(appointmentId, cell) {
+            try {
+                const response = await fetch(`http://127.0.0.1:8090/api/collections/appointment/records/${appointmentId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+    
+                if (response.ok) {
+                    alert('Appointment deleted successfully!');
+                    cell.classList.remove('booked');
+                } else {
+                    alert('Failed to delete appointment');
+                }
+            } catch (error) {
+                console.error('Error deleting appointment:', error);
+                alert('An error occurred while deleting the appointment.');
+            }
+        }
+    
+        document.getElementById('prevMonth').addEventListener('click', () => {
+            if (currentMonth === 0) {
+                currentMonth = 11;
+                currentYear--;
+            } else {
+                currentMonth--;
+            }
+            generateCalendar(currentYear, currentMonth);
+        });
+    
+        document.getElementById('nextMonth').addEventListener('click', () => {
+            if (currentMonth === 11) {
+                currentMonth = 0;
+                currentYear++;
+            } else {
+                currentMonth++;
+            }
+            generateCalendar(currentYear, currentMonth);
+        });
+    
+        generateCalendar(currentYear, currentMonth);
+    </script>
+    
+</body>
+</html>

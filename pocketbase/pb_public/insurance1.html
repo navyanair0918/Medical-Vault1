@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Health Insurance Portal</title>
+    <link rel="stylesheet" href="insurance1.css">
+</head>
+<body>
+    <div class="container">
+        <h2>Health Insurance Form</h2>
+        <form id="insuranceForm">
+            <input type="text" id="name" placeholder="Full Name" required>
+            <label for="dob">Date of Birth</label>
+            <input type="date" id="dob" required>
+            
+            <select id="gender">
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+                <option value="Other">Other</option>
+            </select>
+            <input type="text" id="marital_status" placeholder="Marital_Status" required>
+            <input type="text" id="occupation" placeholder="Occupation" required>
+            <input type="text" id="address" placeholder="Address" required>
+            <input type="tel" id="contact" placeholder="Contact_Number" required>
+            <input type="email" id="email" placeholder="Email" required>
+            <input type="text" id="nominee" placeholder="Nominee_Name" required>
+            <input type="text" id="nominee_relationship" placeholder="Nominee_Relationship" required>
+            <input type="text" id="policy_type" placeholder="Policy_Type" required>
+            <input type="number" id="sum_insured" placeholder="Sum_Insured" required>
+            <input type="number" id="premium_amount" placeholder="Premium_Amount" required>
+            <label for="policy_start_date">Policy Start Date</label>
+            <input type="date" id="policy_start_date" required>
+            
+            <label for="policy_expiry_date">Policy Expiry Date</label>
+            <input type="date" id="policy_expiry_date" required>
+            <input type="text" id="policyId" placeholder="Enter Policy ID">
+            <button id="renewPolicy" type="button">Renew Policy</button>
+            <button type="submit">Submit</button>
+        </form>
+    </div>
+    <script src="insurance1.js"></script>
+</body>
+</html>

@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up</title>
+    <style>
+        body {
+            background-image: radial-gradient(73% 147%, #EADFDF 59%, #ECE2DF 100%), radial-gradient(91% 146%, rgba(255,255,255,0.50) 47%, rgba(0,0,0,0.50) 100%);
+            background-blend-mode: screen;
+            background-image: url("file storage background (3).png");
+            background-size: cover;
+            background-repeat: no-repeat;
+        }
+        .signup-container {
+            max-width: 400px;
+            margin: auto;
+            padding: 20px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.8);
+        }
+
+        .signup-container input, .signup-container button {
+            width: 95%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .signup-container h2{
+            font-size: 2.3em;
+        }
+
+        .signup-container button {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+        }
+
+        .signup-container button:hover {
+            background-color: #0056b3;
+        }
+
+        .nav-buttons {
+            margin-top: 20px;
+            display: none;
+        }
+
+        .nav-buttons button {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            background-color: #28a745;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .nav-buttons button:hover {
+            background-color: #218838;
+        }
+
+        #welcomeMessage {
+            border-radius: 8px;
+            background-image: linear-gradient( 110.1deg,  rgba(53, 148, 53, 0.611) 2.9%, rgba(168,251,60,1) 90.3% );
+            color: black;
+            font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+            display: none;
+            text-align: center;
+            margin-top: 20px;
+            font-size: 20px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+<div class="signup-container">
+    <h2>Sign Up</h2>
+    <form id="signup-form">
+        <input type="email" id="email" placeholder="Email" required autocomplete="email">
+        <input type="password" id="uniquepassword" placeholder="Password" required autocomplete="new-password">
+        <input type="password" id="confirm-password" placeholder="Confirm Password" required autocomplete="new-password">
+        <button type="submit">Sign Up</button>
+    </form>
+
+    <!-- Welcome message -->
+    <div id="welcomeMessage">
+        Welcome! Your personal medical vault is ready.
+    </div>
+
+    <!-- Navigation buttons -->
+    <div class="nav-buttons">
+        <button onclick="redirectTo('files.html')">Go to Files</button>
+        <button onclick="redirectTo('appointment.html')">Go to Appointments</button>
+        <button onclick="redirectTo('scheduledappointments.html')">Go to Scheduled Appointment Reminders</button>
+        <a href="analysis.html"><button>Go to Analysis</button></a>
+    </div>
+</div>
+
+<script>
+    const pocketbaseUrl = 'http://127.0.0.1:8090';
+    const usersCollection = `${pocketbaseUrl}/api/collections/users/records`;
+
+    document.getElementById("signup-form").addEventListener("submit", async function (e) {
+        e.preventDefault(); // Prevent default form submission
+
+        const email = document.getElementById("email").value;
+        const uniquepassword = document.getElementById("uniquepassword").value;
+        const confirmPassword = document.getElementById("confirm-password").value;
+
+        // Ensure passwords match
+        if (uniquepassword !== confirmPassword) {
+            alert("Passwords do not match");
+            return;
+        }
+
+        // Check if the email already exists
+        try {
+            const response = await fetch(`${usersCollection}?filter=email="${encodeURIComponent(email)}"`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`Error checking email: ${errorText}`);
+            }
+
+            const existingUsers = await response.json();
+
+            if (existingUsers.items.length > 0) {
+                alert("This email is already registered. Please use a different email.");
+                return;
+            }
+
+            // Create data object
+            const data = {
+                email: email,
+                uniquepassword: uniquepassword,
+                username: email.split('@')[0] // Example: username from email
+            };
+
+            // Make a POST request to create a new user
+            const createUserResponse = await fetch(usersCollection, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            });
+
+            if (!createUserResponse.ok) {
+                const errorText = await createUserResponse.text(); // Read the response text
+                throw new Error(`Error: ${errorText}`);
+            }
+
+            const record = await createUserResponse.json();
+            console.log('User created successfully:', record);
+
+            alert("Sign-up successful!");
+
+            // Store user email in local storage
+            localStorage.setItem('userEmail', email);
+
+            // Show welcome message and navigation buttons
+            document.getElementById('welcomeMessage').style.display = 'block';  // Show welcome message
+            document.querySelector('.nav-buttons').style.display = 'block';
+        } catch (error) {
+            alert("Error signing up: " + error.message);
+        }
+    });
+
+    function redirectTo(page) {
+        const email = localStorage.getItem('userEmail');
+        if (email) {
+            window.location.href = `${page}?email=${encodeURIComponent(email)}`;
+        } else {
+            alert('User not logged in.');
+        }
+    }
+</script>
+
+</body>
+</html>
+

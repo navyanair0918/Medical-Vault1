@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analysis Results</title>
+    <!-- Link the CSS file -->
+    <link rel="stylesheet" href="styles2.css">
+    <style>
+        h1 {
+            text-align: center;
+            font-weight: 800;
+            font: 300px;
+            font-weight: bolder;
+        }
+        body {
+            border: 5px solid rgb(4, 74, 95);
+            margin: 10px;
+            text-align: center;
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Comparison of Blood Reports</h1>
+    <img src="{{ url_for('static', filename='comparison.png') }}" alt="Comparison Image">
+    <br>
+    <!-- <a href="analysis.html">Go back to upload another report</a> -->
+</body>
+</html>

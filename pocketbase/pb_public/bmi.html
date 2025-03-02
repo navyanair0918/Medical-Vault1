@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Classy BMI Calculator</title>
+    <link rel="stylesheet" href="./bmi.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Adult and Child BMI Calculator</h1>
+        <div class="calculator-box">
+            <label for="age-group">Calculate BMI for:</label>
+            <select id="age-group">
+                <option value="adult">Adult Age 20+</option>
+                <option value="child">Child (2-19)</option>
+            </select>
+
+            <label for="weight">Weight:</label>
+            <input type="number" id="weight" placeholder="Enter weight in kilograms">
+
+            <label for="height">Height:</label>
+            <input type="number" id="height" placeholder="Enter height in centimeters">
+
+            <div class="buttons">
+                <button onclick="calculateBMI()">Calculate</button>
+                <button onclick="clearForm()">Clear</button>
+            </div>
+        </div>
+
+        <div class="result">
+            <h2>Answer:</h2>
+            <p><strong>BMI =</strong> <span id="bmi-result">--</span></p>
+            <p><strong>Category:</strong> <span id="bmi-category">--</span></p>
+
+            <h3>BMI Categories</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>BMI</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>&le; 18.4</td>
+                        <td class="underweight">Underweight</td>
+                    </tr>
+                    <tr>
+                        <td>18.5 - 24.9</td>
+                        <td class="normal">Normal</td>
+                    </tr>
+                    <tr>
+                        <td>25.0 - 39.9</td>
+                        <td class="overweight">Overweight</td>
+                    </tr>
+                    <tr>
+                        <td>&ge; 40.0</td>
+                        <td class="obese">Obese</td>
+                    </tr>
+                </tbody>
+            </table>
+            <h3>Health Advice</h3>
+            <p id="health-advice">--</p>
+            
+            <h3>Diet Plan</h3>
+            <p id="diet-plan">--</p>
+
+            <h3>Exercise Recommendations</h3>
+            <p id="exercise-plan">--</p>
+
+            <h3>Motivational Quote</h3>
+            <p id="motivation">--</p>
+        </div>
+    </div>
+    <script src="./bmi.js"></script>
+</body>
+</html>

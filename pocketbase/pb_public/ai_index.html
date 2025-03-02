@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medical Vault Chatbot</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(to right, #141e30, #243b55);
+            color: white;
+        }
+
+        h1 {
+            margin-top: 20px;
+            font-size: 28px;
+        }
+
+        #chatbox {
+            width: 60%;
+            margin: 20px auto;
+            padding: 15px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+            height: 400px;
+            overflow-y: auto;
+            text-align: left;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .user, .bot {
+            margin: 10px;
+            padding: 10px;
+            border-radius: 10px;
+            max-width: 80%;
+            word-wrap: break-word;
+            display: inline-block;
+        }
+
+        .user {
+            background: #4caf50;
+            color: white;
+            align-self: flex-end;
+            float: right;
+            clear: both;
+        }
+
+        .bot {
+            background: #034661;
+            color: white;
+            float: left;
+            clear: both;
+        }
+
+        #userInput {
+            width: 50%;
+            padding: 10px;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+            outline: none;
+            margin-top: 10px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            text-align: center;
+            box-shadow: 0 0 8px rgba(255, 255, 255, 0.3);
+        }
+
+        #userInput::placeholder {
+            color: #ddd;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            margin-left: 10px;
+            border: none;
+            border-radius: 5px;
+            background: #00c6ff;
+            color: white;
+            cursor: pointer;
+            transition: 0.3s;
+            box-shadow: 0 0 10px rgba(0, 198, 255, 0.8);
+        }
+
+        button:hover {
+            background: #0072ff;
+            box-shadow: 0 0 15px rgba(0, 114, 255, 1);
+        }
+
+        button:active {
+            transform: scale(0.95);
+        }
+    </style>
+</head>
+<body>
+    <h1>Medical Vault AI Chatbot</h1>
+
+    <div id="chatbox"></div>
+
+    <div>
+        <input type="text" id="userInput" placeholder="Ask a question...">
+        <button onclick="sendMessage()">Send</button>
+    </div>
+
+    <script>
+        async function sendMessage() {
+            const userInput = document.getElementById("userInput").value.trim();
+            if (!userInput) {
+                alert("Please enter a message.");
+                return;
+            }
+
+            const chatbox = document.getElementById("chatbox");
+            chatbox.innerHTML += `<div class="user"><strong>You:</strong> ${userInput}</div>`;
+
+            document.getElementById("userInput").value = ""; // Clear input field
+
+            try {
+                const response = await fetch("http://127.0.0.1:5011/chatbot", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({ message: userInput })
+                });
+
+                if (!response.ok) {
+                    throw new Error("Server Error: " + response.status);
+                }
+
+                const data = await response.json();
+                chatbox.innerHTML += `<div class="bot"><strong>Bot:</strong> ${data.response}</div>`;
+                chatbox.scrollTop = chatbox.scrollHeight; // Auto-scroll to the latest message
+
+            } catch (error) {
+                console.error("Error:", error);
+                chatbox.innerHTML += `<div class="bot"><strong>Bot:</strong> Sorry, I'm unable to process your request right now.</div>`;
+            }
+        }
+    </script>
+</body>
+</html>
