@@ -1,0 +1,38 @@
+services:
+  mongo:
+    image: mongo:7
+    restart: unless-stopped
+    volumes: [mongo_data:/data/db]
+    ports: ["27017:27017"]
+  ml:
+    build: ./ml-service
+    restart: unless-stopped
+  document-ai:
+    build: ./document-ai-service
+    restart: unless-stopped
+    ports: ["8002:8002"]
+  server:
+    build: ./server
+    restart: unless-stopped
+    env_file:
+      - ./server/.env
+    environment:
+      PORT: 5000
+      MONGO_URI: mongodb://mongo:27017/medical_vault
+      JWT_SECRET: change-this-in-production
+      CLIENT_URL: http://localhost:5173
+      PUBLIC_APP_URL: ${PUBLIC_APP_URL:-http://localhost:5173}
+      ML_SERVICE_URL: http://ml:8001
+      DOCUMENT_AI_URL: http://document-ai:8002
+      AUTO_VERIFY_DOCTORS: "true"
+    volumes: [uploads:/app/src/uploads]
+    ports: ["5000:5000"]
+    depends_on: [mongo, ml, document-ai]
+  client:
+    build: ./client
+    restart: unless-stopped
+    ports: ["5173:80"]
+    depends_on: [server]
+volumes:
+  mongo_data:
+  uploads:

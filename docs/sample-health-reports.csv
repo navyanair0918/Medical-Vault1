@@ -1,0 +1,6 @@
+reportDate,reportType,title,providerName,metricName,value,unit,referenceMin,referenceMax,group
+2026-01-10,blood,Annual blood panel,Demo Lab,HbA1c,5.6,%,4.0,5.6,Diabetes
+2026-09-18,blood,Annual blood panel,Demo Lab,HbA1c,6.1,%,4.0,5.6,Diabetes
+2026-07-02,vitals,Wellness visit,Demo Hospital,Systolic BP,132,mmHg,,,Vitals
+2026-07-02,vitals,Wellness visit,Demo Hospital,Diastolic BP,84,mmHg,,,Vitals
+2026-08-15,echo,2D Echocardiogram,Demo Hospital,LVEF,60,%,50,70,Cardiac

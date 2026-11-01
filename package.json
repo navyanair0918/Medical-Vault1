@@ -1,0 +1,21 @@
+{
+  "name": "medical-vault",
+  "private": true,
+  "version": "2.0.0",
+  "workspaces": [
+    "server",
+    "client"
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm run dev -w server\" \"npm run dev -w client\" \"npm run dev:ml\"",
+    "dev:ml": "node ml-service/dev.js",
+    "server": "npm run dev -w server",
+    "client": "npm run dev -w client",
+    "seed": "npm run seed -w server",
+    "test": "npm test -w server",
+    "build": "npm run build -w client"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.0"
+  }
+}

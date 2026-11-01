@@ -1,0 +1,7 @@
+reportDate,labName,testName,value,unit,referenceMin,referenceMax
+2026-01-10,City Lab,Hemoglobin,13.9,g/dL,13,17
+2026-01-10,City Lab,HbA1c,5.6,%,4,5.6
+2026-05-12,City Lab,Hemoglobin,13.6,g/dL,13,17
+2026-05-12,City Lab,HbA1c,5.9,%,4,5.6
+2026-09-18,City Lab,Hemoglobin,13.3,g/dL,13,17
+2026-09-18,City Lab,HbA1c,6.1,%,4,5.6
